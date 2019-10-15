@@ -1,5 +1,5 @@
 
-n_cores <- 12
+n_cores <- 8
 
 
 # library(borrowr)

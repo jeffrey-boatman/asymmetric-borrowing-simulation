@@ -18,6 +18,7 @@
   
 main_sim <- function(seed, n_main, n_supp, sigma, scenario, offset, ndpost, 
   data_only = FALSE) {
+  require(borrowr)
   #file <- sprintf("./args/%i-%i-%i-%i.txt", seed, n_main, scenario, offset)
   #sink(file)
   # cat("\n", seed, n_main, scenario, offset, sep = "\t")
@@ -372,15 +373,26 @@ main_sim <- function(seed, n_main, n_supp, sigma, scenario, offset, ndpost,
       trt_var        = "trt",
       ndpost         = 100,
       theta          = 100))
+    # ~~~~ Causal, no borrowing
+    suppressMessages(cnb <- pate(fm, 
+      estimator      = "bayesian_lm", 
+      data           = subset(dat, src == "a"),
+      src_var        = "src",
+      primary_source = "a",
+      trt_var        = "trt",
+      ndpost         = 100))
+    
     
 
     (mm_error   <- mean(mm$pate_post) - mte)
     (bylm_error <- mean(bylm$pate_post) - mte)
     (bart_error <- mean(bfit$pate_post) - mte)
+    (cnb_error   <- mean(cnb$pate_post) - mte)
 
     (mm_weight   <- mm$post_probs[1])
     (bylm_weight <- bylm$post_probs[1])
     (bart_weight <- bfit$post_probs[1])
+    # don't need with for causal estimator without borrowing
 
 
     out <- data.frame(
@@ -399,6 +411,7 @@ main_sim <- function(seed, n_main, n_supp, sigma, scenario, offset, ndpost,
     
     out$mm_weight <- mm_weight
     out$mm_error  <- mm_error
+    out$cnb_error <- cnb_error
     
     out$bylm_esss <- var(bylm$mem_pate_post[, 2]) / var(bylm$mem_pate_post[, 1]) - 1
     out$bart_esss <- var(bfit$mem_pate_post[, 2]) / var(bfit$mem_pate_post[, 1]) - 1
