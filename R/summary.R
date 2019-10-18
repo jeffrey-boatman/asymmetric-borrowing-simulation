@@ -7,7 +7,7 @@ library(tidyr)
 library(ggplot2)
 
 # message("update to 1:5?")
-file_list <- paste0("../outfiles/out_", (1:5), ".txt") 
+file_list <- paste0("./outfiles/out_", (1:5), ".txt") 
 rr_list   <- lapply(file_list, read.table, header = TRUE)
 
 rr <- do.call(rbind, rr_list)
@@ -55,7 +55,7 @@ mm <- rr %>%
   separate(est_est, into = c("estimator", "estimand")) %>%
   spread(key = estimand, value = value) %>%
   group_by(scenario, n_main, offset, estimator) %>%
-  mutate(
+  summarize(
     bias = mean(error),
     mse  = mean(error ^ 2),
     weight = mean(weight)
@@ -88,7 +88,7 @@ line_size <- 2
 # esss    <- filter(esss,    n_main == "100")
 
 for(scen in scens) {
-  pdf(sprintf("../plots/scenario-%s-weights.pdf", scen), height = 6, width = 6)
+  pdf(sprintf("./plots/scenario-%s-weights.pdf", scen), height = 6, width = 6)
   # ~ weights plot ----
   bart <- filter(mm, estimator == "bart", scenario == scen)
   bylm <- filter(mm, estimator == "bylm", scenario == scen)
@@ -116,7 +116,7 @@ for(scen in scens) {
   dev.off()
 
   # ~ bias plot ----
-  pdf(sprintf("../plots/scenario-%s-bias.pdf", scen), height = 6, width = 6)
+  pdf(sprintf("./plots/scenario-%s-bias.pdf", scen), height = 6, width = 6)
   # dd <- filter(bias, estimator != "MEM", scenario == scen)
   dd <- filter(mm, scenario == scen)
   bias_range <- c(-1, 1) * ceiling(max(abs(range(dd$bias))))
@@ -144,7 +144,9 @@ for(scen in scens) {
   lines(cnb$bias ~ cnb$offset,
     col = "salmon",
     lwd = line_size)
-  legend("topleft", legend = c("BART", "BLM", "No Causal", "No Borrowing"),
+  legend_loc <- ifelse(scen %in% c(2, 3), "bottomleft", "topleft")
+  legend(legend_loc,  
+    legend = c("BART", "BLM", "No Causal", "No Borrowing"),
     col = c("steelblue2", "seagreen3", "gold", "salmon"),
     lwd = 2,
     bty = "n")
@@ -154,7 +156,7 @@ for(scen in scens) {
   dev.off()
 
   # ~ MSE plot ----
-  pdf(sprintf("../plots/scenario-%s-mse.pdf", scen), height = 6, width = 6)
+  pdf(sprintf("./plots/scenario-%s-mse.pdf", scen), height = 6, width = 6)
   # dd <- filter(mse, estimator != "MEM", scenario == scen)
   # dd <- filter(mm, scenario == scen)
   mse_range <- c(0, max(dd$mse))
@@ -207,6 +209,8 @@ for(scen in scens) {
 }
 
 # marginal MEM bias at delta = 0 ----
-bias %>% 
-  filter(estimator == "MEM", offset == 0, n_main == "100")
+# bias %>% 
+#   filter(estimator == "MEM", offset == 0, n_main == "100")
 
+mm %>% filter(offset == 0, estimator == "mm") %>%
+  print(n = Inf)
