@@ -76,47 +76,62 @@ scens <- unique(rr$scenario)
 
 
 
-# plots for paper ----
+# plot parameters ----
 
-axis_size <- 1.5
-title_size <- 1.5
-line_size <- 2
+
+axis_size <- 2
+# title_size <- 1.75
+main_size <- 2.5
+line_size <- 3
+axis_title_size <- 2.5
 
 # weights <- filter(weights, n_main == "100")
 # bias    <- filter(bias,    n_main == "100")
 # mse     <- filter(mse,     n_main == "100")
 # esss    <- filter(esss,    n_main == "100")
 
+# mag <- 1.25
+
+# plots for paper ----
 for(scen in scens) {
-  pdf(sprintf("./plots/scenario-%s-weights.pdf", scen), height = 6, width = 6)
+
+  # revision
+  pdf(sprintf("./plots/scenario-%s.pdf", scen), height = 6, width = 18)
+  # par(cex.axis = mag, cex.lab = mag, cex.main = mag)
+  par(mfrow = c(1, 3), mar = c(6, 7, 4, 2) + 0.1)
   # ~ weights plot ----
   bart <- filter(mm, estimator == "bart", scenario == scen)
   bylm <- filter(mm, estimator == "bylm", scenario == scen)
   mem  <- filter(mm, estimator == "mm",   scenario == scen)
   cnb  <- filter(mm, estimator == "cnb",  scenario == scen)
   plot(bart$weight ~ bart$offset, type = 'l', ylim = c(0, 1),
-    xlab = list(expression(delta), cex = axis_size),
-    ylab = list("Posterior Weight", cex = axis_size),
+    # xlab = list(expression(delta), cex = axis_title_size),
+    # ylab = list("Posterior Weight", cex = axis_title_size),
     col = "steelblue2",
     lwd = line_size,
-    main = list("Posterior Weight in Favor of Borrowing", cex = title_size),
-    axes = FALSE)
+    # main = list("Posterior Weight in Favor of Borrowing", cex = main_size),
+    axes = FALSE,
+    ann = FALSE)
   # legend("topleft", legend = c("BART", "BLM", "No Causal", "No Borrowing"),
   #   col = c("steelblue2", "seagreen3", "gold", "salmon"),
   #   lwd = 2,
   #   bty = "n")
-  axis(1)
-  axis(2, las = 1)
+  axis(1, cex.axis = axis_size)
+  axis(2, las = 1, cex.axis = axis_size)
+  title(xlab = expression(delta), line = 4, cex.lab = axis_title_size)
+  title(ylab = "Posterior Weight", line = 4, cex.lab = axis_title_size)
+  title(main = "Posterior Weight in Favor of Borrowing", cex.main = main_size)
   lines(bylm$weight ~ bylm$offset,
     col = "seagreen3",
     lwd = line_size)
   lines(mem$weight ~ mem$offset,
     col = "gold",
     lwd = line_size)
-  dev.off()
+  # dev.off()
 
   # ~ bias plot ----
-  pdf(sprintf("./plots/scenario-%s-bias.pdf", scen), height = 6, width = 6)
+  # pdf(sprintf("./plots/scenario-%s-bias.pdf", scen), height = 6, width = 6)
+  # par(cex.axis = mag, cex.lab = mag, cex.main = mag)
   # dd <- filter(bias, estimator != "MEM", scenario == scen)
   dd <- filter(mm, scenario == scen)
   bias_range <- c(-1, 1) * ceiling(max(abs(range(dd$bias))))
@@ -126,14 +141,15 @@ for(scen in scens) {
   # bylm <- filter(bias, estimator == "BYLM", scenario == scen)
   plot(bart$bias ~ bart$offset, type = 'l', 
     ylim = bias_range,
-    xlab = list(expression(delta), cex = axis_size),
-    ylab = list("Bias", cex = axis_size),
+    xlab = list(expression(delta), cex = axis_title_size),
+    ylab = list("Bias", cex = axis_title_size),
     col = "steelblue2",
     lwd = line_size,
-    main = list("Estimated Bias", cex = title_size),
+    main = list("Estimated Bias", cex = main_size),
     axes = FALSE)
-  axis(1)
-  axis(2, las = 1, at = seq(min(bias_range), max(bias_range), 1))
+  axis(1, cex.axis = axis_size)
+  axis(2, las = 1, at = seq(min(bias_range), max(bias_range), 1), 
+    cex.axis = axis_size)
   # axis(2, las = 1)
   lines(bylm$bias ~ bylm$offset,
     col = "seagreen3",
@@ -144,7 +160,8 @@ for(scen in scens) {
   lines(cnb$bias ~ cnb$offset,
     col = "salmon",
     lwd = line_size)
-  legend_loc <- ifelse(scen %in% c(2, 3), "bottomleft", "topleft")
+  # legend_loc <- ifelse(scen %in% c(2, 3), "bottomleft", "topleft")
+  legend_loc <- "topleft"
   legend(legend_loc,  
     legend = c("BART", "BLM", "No Causal", "No Borrowing"),
     col = c("steelblue2", "seagreen3", "gold", "salmon"),
@@ -153,10 +170,11 @@ for(scen in scens) {
   # lines(x = range(dd$offset), y = c(0, 0), lty = 2, 
   #   lwd = 2,
   #   col = gray(3/4))
-  dev.off()
+  # dev.off()
 
   # ~ MSE plot ----
-  pdf(sprintf("./plots/scenario-%s-mse.pdf", scen), height = 6, width = 6)
+  # pdf(sprintf("./plots/scenario-%s-mse.pdf", scen), height = 6, width = 6)
+  # par(cex.axis = mag, cex.lab = mag, cex.main = mag)
   # dd <- filter(mse, estimator != "MEM", scenario == scen)
   # dd <- filter(mm, scenario == scen)
   mse_range <- c(0, max(dd$mse))
@@ -165,14 +183,14 @@ for(scen in scens) {
   # bylm <- filter(mse, estimator == "BYLM", scenario == scen)
   plot(bart$mse ~ bart$offset, type = 'l', 
     ylim = mse_range,
-    xlab = list(expression(delta), cex = axis_size),
-    ylab = list("MSE", cex = axis_size),
+    xlab = list(expression(delta), cex = axis_title_size),
+    ylab = list("MSE", cex = axis_title_size),
     col = "steelblue2",
     lwd = line_size,
-    main = list("Estimated MSE", cex = title_size),
+    main = list("Estimated MSE", cex = main_size),
     axes = FALSE)
-  axis(1)
-  axis(2, las = 1)
+  axis(1, cex.axis = axis_size)
+  axis(2, las = 1, cex.axis = axis_size)
   lines(bylm$mse ~ bylm$offset,
     col = "seagreen3",
     lwd = line_size)
@@ -182,31 +200,11 @@ for(scen in scens) {
   lines(cnb$mse ~ cnb$offset,
     col = "salmon",
     lwd = line_size)
-  dev.off()
-  
-  # ~ esss plot ----
-  # pdf(sprintf("../plots/scenario-%s-esss.pdf", scen), height = 6, width = 6)
-  # dd <- filter(esss, estimator != "MEM", scenario == scen)
-  # esss_range <- range(dd$value * 100)
-  # 
-  # bart <- filter(esss, estimator == "BART", scenario == scen)
-  # bylm <- filter(esss, estimator == "BYLM", scenario == scen)
-  # plot(bart$value * 100 ~ bart$offset, type = 'l', 
-  #   ylim = esss_range,
-  #   xlab = list(expression(delta), cex = axis_size),
-  #   ylab = list("ESSS(%)", cex = axis_size),
-  #   col = "steelblue2",
-  #   lwd = line_size,
-  #   main = list("Estimated ESSS(%)", cex = title_size),
-  #   axes = FALSE)
-  # axis(1)
-  # axis(2, las = 1)
-  # lines(bylm$value * 100 ~ bylm$offset,
-  #   col = "seagreen3",
-  #   lwd = line_size)
   # dev.off()
-
+  
+  dev.off()
 }
+
 
 # marginal MEM bias at delta = 0 ----
 # bias %>% 
@@ -214,3 +212,4 @@ for(scen in scens) {
 
 mm %>% filter(offset == 0, estimator == "mm") %>%
   print(n = Inf)
+
