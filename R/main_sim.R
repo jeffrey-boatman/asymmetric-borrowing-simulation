@@ -40,7 +40,7 @@ main_sim <- function(seed, n_main, n_supp, sigma, scenario, offset, ndpost,
           -Inf, Inf)$val - 0.5  
       }
       
-      b1 <- 1
+      b1 <- 1 / 3
       b0 <- uniroot(pfun, c(-10, 10))$root
       p_main <- plogis(b0 + b1 * x_main)
       A_main  <- rbinom(n_main, 1, p_main)
@@ -81,7 +81,7 @@ main_sim <- function(seed, n_main, n_supp, sigma, scenario, offset, ndpost,
           -Inf, Inf)$val - 0.5  
       }
       
-      b1 <- 2
+      b1 <- 2 / 3
       b0 <- uniroot(pfun, c(-10, 10))$root
       p_main <- plogis(b0 + b1 * x_main)
       A_main  <- rbinom(n_main, 1, p_main)
@@ -123,7 +123,7 @@ main_sim <- function(seed, n_main, n_supp, sigma, scenario, offset, ndpost,
           -Inf, Inf)$val - 0.5  
       }
       
-      b1 <- 1
+      b1 <- 1 / 3
       b0 <- uniroot(pfun, c(-10, 10))$root
       p_main <- plogis(b0 + b1 * x_main)
       A_main  <- rbinom(n_main, 1, p_main)
@@ -206,7 +206,7 @@ main_sim <- function(seed, n_main, n_supp, sigma, scenario, offset, ndpost,
       
       # logistic regression parameters ----
       x_main_t <- matrix(rnorm(1e5 * 10), nrow = 1e5, ncol = 10)
-      beta <- c(1 / 3, 1 / 3, 1 / 3, 0, 0, 0, 0, 0, 0, 0)
+      beta <- c(1 / 3, 1 / 3, 1 / 3, 0, 0, 0, 0, 0, 0, 0) / 3
       pfun <- function(b0) {
         mean(plogis(c(b0 + x_main_t %*% beta))) - 0.5
       }
@@ -261,7 +261,7 @@ main_sim <- function(seed, n_main, n_supp, sigma, scenario, offset, ndpost,
       # multiple covariates and interactions
       # logistic regression parameters ----
       x_main_t <- matrix(rnorm(1e5 * 3), nrow = 1e5, ncol = 3)
-      beta <- c(1 / 3, 1 / 3, 1 / 3)
+      beta <- c(1 / 3, 1 / 3, 1 / 3) / 2
       pfun <- function(b0) {
         mean(plogis(c(b0 + x_main_t %*% beta))) - 0.5
       }
@@ -357,13 +357,21 @@ main_sim <- function(seed, n_main, n_supp, sigma, scenario, offset, ndpost,
       trt_var        = "trt",
       ndpost         = 100))
     # ~~~~ Bayesian LM ~~~~ ----
+    # p <- (1 / 2) ^ ncol(attributes(terms(fm))$factors)
+    p <- if (scenario < 5) {
+      (1 / 2) ^ 2
+    } else if (scenario == 5) {
+      (1 / 2) ^ 10
+    } else (1 / 2) ^ 3
+    
     suppressMessages(bylm <- pate(fm, 
       estimator      = "bayesian_lm", 
       data           = dat,
       src_var        = "src",
       primary_source = "a",
       trt_var        = "trt",
-      ndpost         = 100))
+      ndpost         = 100,
+      exch_prob      = p))
     # ~~~~ BART ~~~~ ----
     suppressMessages(bfit <- pate(fm, 
       estimator      = "BART", 
