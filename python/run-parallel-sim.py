@@ -12,7 +12,7 @@ if str(nice) not in nice_options:
   nice = '19'
 
 servers = ['carbon', 'cesium', 'chromium' , 'potassium', 'silicon']
-# servers = ['chromium', 'silicon']
+# servers = ['carbon', 'chromium' , 'potassium', 'silicon']
 server_nums = [str(i + 1) for i in range(len(servers))]
 
 #for server, server_num in zip(servers, server_nums):
@@ -26,7 +26,7 @@ def runsim(server, command):
   ssh = paramiko.SSHClient()
   ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
   ssh.connect(server + '.biostat.umn.edu', username = un, password = pw)
-  ssh.exec_command("cd sim/bart/dev/code; " + command)
+  ssh.exec_command("cd sim/asymmetric-borrowing/R; " + command)
   ssh.close()
 
 try:
